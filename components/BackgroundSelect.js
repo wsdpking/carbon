@@ -6,7 +6,7 @@ import ColorPicker from './ColorPicker'
 import Popout, { managePopout } from './Popout'
 import { COLORS, DEFAULT_BG_COLOR } from '../lib/constants'
 import { validateColor } from '../lib/colors'
-import { capitalize, stringifyRGBA } from '../lib/util'
+import { capitalize } from '../lib/util'
 
 class BackgroundSelect extends React.PureComponent {
   selectTab = name => {
@@ -15,7 +15,7 @@ class BackgroundSelect extends React.PureComponent {
     }
   }
 
-  handlePickColor = ({ rgb }) => this.props.onChange({ backgroundColor: stringifyRGBA(rgb) })
+  handlePickColor = backgroundColor => this.props.onChange({ backgroundColor })
 
   render() {
     const { color, mode, image, onChange, isVisible, toggleVisibility, carbonRef } = this.props

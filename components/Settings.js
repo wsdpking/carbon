@@ -8,6 +8,7 @@ import Toggle from './Toggle'
 import Popout, { managePopout } from './Popout'
 import Button from './Button'
 import Presets from './Presets'
+import ColorPicker from './ColorPicker'
 import { COLORS, DEFAULT_PRESETS } from '../lib/constants'
 import { toggle, getPresets, savePresets, generateId } from '../lib/util'
 import SettingsIcon from './svg/Settings'
@@ -106,7 +107,21 @@ const WindowSettings = React.memo(
 )
 
 const TypeSettings = React.memo(
-  ({ onChange, onUpload, font, size, lineHeight, onWidthChanging, onWidthChanged }) => {
+  ({
+    onChange,
+    onUpload,
+    font,
+    size,
+    lineHeight,
+    highlighting,
+    textHighlight,
+    backgroundHighlight,
+    onWidthChanging,
+    onWidthChanged,
+    onHighlight
+  }) => {
+    const [colorPicker, setColorPicker] = React.useState(null)
+
     return (
       <div className="settings-content">
         <FontSelect
@@ -132,6 +147,62 @@ const TypeSettings = React.memo(
           usePercentage={true}
           onChange={onChange.bind(null, 'lineHeight')}
         />
+        <Toggle
+          label="Highlighting"
+          enabled={highlighting}
+          onChange={() => onHighlight({ highlighting: !highlighting })}
+        />
+        {highlighting && (
+          <div className="row highlighting-options">
+            <div>
+              <span>Text</span>
+              <button
+                style={{ backgroundColor: textHighlight }}
+                onClick={() => setColorPicker(c => (c === 'text' ? null : 'text'))}
+              />
+            </div>
+            <div>
+              <span>Background</span>
+              <button
+                style={{ backgroundColor: backgroundHighlight }}
+                onClick={() => setColorPicker(c => (c === 'background' ? null : 'background'))}
+              />
+            </div>
+          </div>
+        )}
+        {colorPicker && (
+          <ColorPicker
+            presets={[]}
+            color={colorPicker === 'text' ? textHighlight : backgroundHighlight}
+            onChange={color => onHighlight({ [`${colorPicker}Highlight`]: color })}
+          />
+        )}
+        <style jsx>
+          {`
+            button {
+              display: flex;
+              width: 1rem;
+              height: 1rem;
+              border-radius: 3px;
+            }
+
+            .highlighting-options {
+              display: flex;
+            }
+
+            .highlighting-options > div:first-child {
+              border-right: 1px solid ${COLORS.SECONDARY};
+            }
+
+            .highlighting-options > div {
+              display: flex;
+              flex: 1;
+              padding: 0.5rem;
+              justify-content: space-between;
+              align-items: center;
+            }
+          `}
+        </style>
       </div>
     )
   }
@@ -209,7 +280,10 @@ class Settings extends React.PureComponent {
     selectedMenu: 'Window',
     showPresets: true,
     previousSettings: null,
-    widthChanging: false
+    widthChanging: false,
+    highlighting: false,
+    textHighlight: '#000',
+    backgroundHighlight: '#fff'
   }
 
   settingsRef = React.createRef()
@@ -249,6 +323,10 @@ class Settings extends React.PureComponent {
     this.props.onChange('fontFamily', id)
     this.props.onChange('fontUrl', url)
     this.props.toggleVisibility()
+  }
+
+  handleHighlight = updates => {
+    this.setState(updates)
   }
 
   getSettingsFromProps = () =>
@@ -334,9 +412,13 @@ class Settings extends React.PureComponent {
             onUpload={this.handleFontUpload}
             onWidthChanging={this.handleWidthChanging}
             onWidthChanged={this.handleWidthChanged}
+            onHighlight={this.handleHighlight}
             font={this.props.fontFamily}
             size={this.props.fontSize}
             lineHeight={this.props.lineHeight}
+            highlighting={this.state.highlighting}
+            textHighlight={this.state.textHighlight}
+            backgroundHighlight={this.state.backgroundHighlight}
           />
         )
       case 'Misc':
@@ -347,7 +429,15 @@ class Settings extends React.PureComponent {
   }
 
   render() {
-    const { selectedMenu, showPresets, presets, previousSettings, widthChanging } = this.state
+    const {
+      selectedMenu,
+      showPresets,
+      presets,
+      previousSettings,
+      widthChanging,
+      backgroundHighlight,
+      textHighlight
+    } = this.state
     const { preset, isVisible, toggleVisibility } = this.props
 
     return (
@@ -412,6 +502,15 @@ class Settings extends React.PureComponent {
         </style>
         <style jsx global>
           {`
+            .CodeMirror .CodeMirror-selected {
+              background: ${backgroundHighlight} !important;
+            }
+
+            .CodeMirror .CodeMirror-selectedtext {
+              color: ${textHighlight} !important;
+              background: ${backgroundHighlight} !important;
+            }
+
             .settings-content {
               width: 100%;
               border-left: 2px solid ${COLORS.SECONDARY};

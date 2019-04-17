@@ -15,6 +15,7 @@ import {
   DEFAULT_SETTINGS,
   THEMES_HASH
 } from '../lib/constants'
+import '../lib/mark-selection'
 
 const Watermark = dynamic(() => import('./svg/Watermark'), {
   loading: () => null
@@ -87,7 +88,8 @@ class Carbon extends React.PureComponent {
       // negative values removes the cursor, undefined means default (530)
       cursorBlinkRate: this.props.readOnly ? -1 : undefined,
       // needs to be able to refresh every 16ms to hit 60 frames / second
-      pollInterval: 16
+      pollInterval: 16,
+      styleSelectedText: true
     }
     const backgroundImage =
       (this.props.config.backgroundImage && this.props.config.backgroundImageSelection) ||

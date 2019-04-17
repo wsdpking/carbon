@@ -2,6 +2,7 @@ import React from 'react'
 import { SketchPicker } from 'react-color'
 
 import { COLORS } from '../lib/constants'
+import { stringifyRGBA } from '../lib/util'
 
 const pickerStyle = {
   backgroundColor: COLORS.BLACK,
@@ -14,7 +15,7 @@ const ColorPicker = ({ onChange = () => {}, color, presets, style }) => (
     <SketchPicker
       styles={{ picker: style || pickerStyle }}
       color={color}
-      onChangeComplete={onChange}
+      onChangeComplete={({ rgb }) => onChange(stringifyRGBA(rgb))}
       presetColors={presets}
     />
     <style jsx>
